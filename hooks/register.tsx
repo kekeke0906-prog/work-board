@@ -425,7 +425,7 @@ export const register: Register = on => {
           marginBottom="xs"
         >
           <Box flexDirection="row" gap="xs" alignItems="center">
-            <Text color={STATUS_COLOR[status]}>{s.isRunning ? '●' : '○'}</Text>
+            <Text color={s.isRunning ? 'success' : 'inactive'}>{s.isRunning ? '●' : '○'}</Text>
             <Text weight="semibold">{s.title}</Text>
           </Box>
           {line ? (
@@ -445,11 +445,14 @@ export const register: Register = on => {
             {(['active', 'waiting', 'done'] as const).map(one => (
               <Button
                 key={`st-${one}-${s.id}`}
+                variant={status === one ? 'primary' : 'secondary'}
                 onPress={() => setStatus(s.id, note.status === one ? 'none' : one)}
               >
-                <Text color={STATUS_COLOR[one]} inverse={status === one} dimColor={status !== one}>
-                  {status === one ? ` ● ${STATUS_LABEL[one]} ` : ` ${STATUS_LABEL[one]} `}
-                </Text>
+                {status === one ? (
+                  STATUS_LABEL[one]
+                ) : (
+                  <Text color={STATUS_COLOR[one]}>{STATUS_LABEL[one]}</Text>
+                )}
               </Button>
             ))}
             <Button
