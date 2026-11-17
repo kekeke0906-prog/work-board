@@ -99,6 +99,22 @@ async function setPersonal(
   if (next) await $.store.set(STORE_PERSONAL, next)
 }
 
+// ボードを一度でも開いたか（開いていない間は定期更新しない）
+let paneOpened = false
+
+// このセッション自身にボードで「完了」が付いているか
+async function isThisSessionDone($: EngineInterface): Promise<boolean> {
+  try {
+    // list_sessions の id は "local_" 付き、$.session.id() は無しのことがあるので両方を見る
+    const bare = (await $.session.id()).replace(/^local_/, '')
+    const notes = await $.state.get(NOTES)
+    const held = notes.value ?? {}
+    return held[bare]?.status === 'done' || held[`local_${bare}`]?.status === 'done'
+  } catch {
+    return false
+  }
+}
+
 // 起動時に store から state へ読み戻す
 async function loadFromStore($: EngineInterface): Promise<void> {
   const notes = await $.store.get(STORE_NOTES)
@@ -335,15 +351,21 @@ export const register: Register = on => {
       name: 'board',
       description: '作業ボード（セッション一覧・個人タスク）を右側に開く',
     })
-    void $.ui.open({ id: PANE, title: TITLE })
-    void loadFromStore($).then(() => refreshAll($))
+    void loadFromStore($).then(async () => {
+      // このセッション自身が「完了」なら自動では開かない（/board で開ける）
+      if (await isThisSessionDone($)) return
+      paneOpened = true
+      await $.ui.open({ id: PANE, title: TITLE })
+      await refreshAll($)
+    })
     $.clock.every(REFRESH_MS, () => {
-      void refreshAll($)
+      if (paneOpened) void refreshAll($)
     })
     return next(e)
   })
 
   on('command.run', { command: 'board' }, async $ => {
+    paneOpened = true
     await $.ui.open({ id: PANE, title: TITLE })
     await refreshAll($)
     return { text: '作業ボードを開きました。' }
