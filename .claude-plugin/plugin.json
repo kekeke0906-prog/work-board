@@ -1,0 +1,6 @@
+{
+  "name": "work-board",
+  "version": "0.1.0",
+  "description": "チャット横の作業ボード: 自分のセッション一覧・このセッションのタスク・サブエージェントを常時表示",
+  "types": "./types/index.d.ts"
+}

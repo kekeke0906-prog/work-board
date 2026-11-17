@@ -1,0 +1,5 @@
+{
+  "name": "work-board",
+  "owner": { "name": "KENGO" },
+  "plugins": [{ "name": "work-board", "source": "./" }]
+}
